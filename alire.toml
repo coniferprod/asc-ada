@@ -1,0 +1,9 @@
+name = "asc"
+description = "ASCII code lookup utility"
+version = "0.1.0-dev"
+
+authors = ["Jere Käpyaho"]
+maintainers = ["Jere Käpyaho <2261936+jerekapyaho@users.noreply.github.com>"]
+maintainers-logins = ["jerekapyaho"]
+
+executables = ["asc"]
