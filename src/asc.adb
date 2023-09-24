@@ -2,7 +2,9 @@ with Ada.Command_Line;
 with Ada.Text_IO;
 with Ada.Characters.Latin_1;
 with Ada.Integer_Text_IO;
+with Ada.Strings.Fixed;
 with Ada.Strings.Bounded;
+with Ada.Strings.Unbounded;
 
 procedure Asc is
     package CLI renames Ada.Command_Line;
@@ -12,6 +14,53 @@ procedure Asc is
     subtype ASCII_Character is
        Character range Ada.Characters.Latin_1.NUL ..
              Ada.Characters.Latin_1.DEL;
+
+    function Trimmed_Number_String (Number_String : String; Final_Length: Positive) return String is
+        First_Hash_Position : Positive;
+        Second_Hash_Position : Positive;
+        S : String := Number_String;
+    begin
+        --Ada.Text_IO.Put_Line ("String to trim = '" & S & "'");
+
+        Ada.Strings.Fixed.Trim (Source => S, Side => Ada.Strings.Both);
+        --Ada.Text_IO.Put_Line ("Trimmed = '" & S & "'");
+
+        -- Find the first hash, indicating the start of the base specifier.
+        First_Hash_Position := Ada.Strings.Fixed.Index (
+            Source => S, 
+            Pattern => "#");
+        --Ada.Text_IO.Put ("First hash position = ");
+        --Ada.Integer_Text_IO.Put (First_Hash_Position);
+        --Ada.Text_IO.New_Line;
+
+        -- Find the second hash, indicating the end of the base specifier.
+        -- Starting the search from after the first hash.
+        Second_Hash_Position := Ada.Strings.Fixed.Index (
+            Source => S, 
+            Pattern => "#",
+            From => First_Hash_Position + 1);
+        --Ada.Text_IO.Put ("Second hash position = ");
+        --Ada.Integer_Text_IO.Put (Second_Hash_Position);
+        --Ada.Text_IO.New_Line;
+
+        -- Everything after the second hash up until the end of the string
+        -- is the actual number representation. Add leading zero if necessary.
+        declare
+            Start_Position : constant Positive := First_Hash_Position + 1;
+            End_Position : constant Positive := Second_Hash_Position - 1;
+            Result : String := S (Start_Position .. End_Position);
+        begin
+            --Ada.Text_IO.Put_Line ("Result before padding = '" & Result & "'");
+            if Result'Length < Final_Length then
+                for I in 1 .. Result'Length - Final_Length loop
+                    Result := "0" & Result;
+                end loop;
+                return Result;
+            else
+                return Result;
+            end if;
+        end;
+    end Trimmed_Number_String;
 
     procedure Print_Row (Char : ASCII_Character) is
         package Name_Str is new Ada.Strings.Bounded.Generic_Bounded_Length
@@ -82,14 +131,51 @@ procedure Asc is
             To_Bounded_String ("z"), To_Bounded_String ("{"),
             To_Bounded_String ("|"), To_Bounded_String ("}"),
             To_Bounded_String ("~"), To_Bounded_String ("DEL"));
+
+        Hex_String : String (1..6);  -- max length for "16#FF#"
+        Oct_String : String (1..6);  -- max length for "8#666#"
+        Bin_String : String (1..11);  -- max length for 2#11111111#
+
+        Tab : constant Character := Ada.Characters.Latin_1.HT;
     begin
+        -- Output the decimal character code. Base 10 has no base specifier.
         Ada.Integer_Text_IO.Put (Item => Character'Pos (Char), Base => 10);
-        Ada.Integer_Text_IO.Put
-           (Item => Character'Pos (Char), Width => 2, Base => 16);
-        Ada.Integer_Text_IO.Put
-           (Item => Character'Pos (Char), Width => 7, Base => 2);
-        Ada.Integer_Text_IO.Put
-           (Item => Character'Pos (Char), Width => 3, Base => 8);
+
+        Ada.Text_IO.Put (Tab);
+
+        -- Write the hex number into a string, to trim it later.
+        Ada.Integer_Text_IO.Put (
+            To => Hex_String, 
+            Item => Character'Pos (Char),
+            Base => 16);
+        --Ada.Text_IO.Put ("'" & Hex_String & "'");
+        Ada.Text_IO.Put (Trimmed_Number_String (Hex_String, Final_Length => 2));
+
+        --Ada.Integer_Text_IO.Put
+        --   (Item => Character'Pos (Char), Width => 2, Base => 16);
+
+        Ada.Text_IO.Put (Tab);
+
+        Ada.Integer_Text_IO.Put (
+            To => Bin_String, Item => Character'Pos (Char), Base => 2
+        );
+        Ada.Text_IO.Put (Trimmed_Number_String (Bin_String, Final_Length => 8));
+
+        --Ada.Integer_Text_IO.Put
+        --   (Item => Character'Pos (Char), Width => 7, Base => 2);
+
+        Ada.Text_IO.Put (Tab);
+
+        Ada.Integer_Text_IO.Put (
+            To => Oct_String, Item => Character'Pos (Char), Base => 8
+        );
+        Ada.Text_IO.Put (Trimmed_Number_String (Oct_String, Final_Length => 3));
+
+        --Ada.Integer_Text_IO.Put
+        --   (Item => Character'Pos (Char), Width => 3, Base => 8);
+        
+        Ada.Text_IO.Put (Tab);
+
         Ada.Text_IO.Put (Item => To_String (Names (Char)));
         Ada.Text_IO.New_Line;
     end Print_Row;
