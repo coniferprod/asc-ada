@@ -48,17 +48,19 @@ procedure Asc is
         declare
             Start_Position : constant Positive := First_Hash_Position + 1;
             End_Position : constant Positive := Second_Hash_Position - 1;
-            Result : String := S (Start_Position .. End_Position);
+            Result : Ada.Strings.Unbounded.Unbounded_String := Ada.Strings.Unbounded.To_Unbounded_String (S (Start_Position .. End_Position));
+            Count : constant Integer := Final_Length - Ada.Strings.Unbounded.Length (Result); 
         begin
-            --Ada.Text_IO.Put_Line ("Result before padding = '" & Result & "'");
-            if Result'Length < Final_Length then
-                for I in 1 .. Result'Length - Final_Length loop
-                    Result := "0" & Result;
-                end loop;
-                return Result;
-            else
-                return Result;
-            end if;
+            --Ada.Text_IO.Put_Line ("Count = " & Count'Image);
+            --Ada.Text_IO.Put_Line ("Result before padding = '" & Ada.Strings.Unbounded.To_String (Result) & "'");
+            for I in 1..Count loop
+                Ada.Strings.Unbounded.Insert (
+                    Source => Result, 
+                    Before => 1, 
+                    New_Item => "0");
+            end loop;
+            --Ada.Text_IO.Put_Line ("Result after padding = '" & Ada.Strings.Unbounded.To_String (Result) & "'");
+            return Ada.Strings.Unbounded.To_String (Result);
         end;
     end Trimmed_Number_String;
 
