@@ -48,40 +48,26 @@ procedure Asc is
         Value : constant Integer := Character'Pos (Char); 
     begin
         -- Update the Names array
-        for Char in Ada.Characters.Latin_1.Exclamation .. ASCII_Character'Pred (Ada.Characters.Latin_1.DEL) loop
-            Names (Char) := Char & "  "; -- pad to three characters
-        end loop;
-        Names (ASCII_Character'Last) := "DEL";
+        declare
+            Start_Char : constant Character := Ada.Characters.Latin_1.Exclamation;
+            End_Char : constant Character := ASCII_Character'Pred (Ada.Characters.Latin_1.DEL);
+        begin
+            for Char in Start_Char .. End_Char loop
+                Names (Char) := Char & "  "; -- pad to three characters
+            end loop;
+            Names (ASCII_Character'Last) := "DEL";
+        end;
 
-        Print_Value (
-            Value => Value,
-            Base => 10,
-            Width => 3 
-        );
-
-        Ada.Text_IO.Put (Tab);
-        Print_Value (
-            Value => Value,
-            Base => 16,
-            Width => 2,
-            Fill => True 
-        );
+        Print_Value (Value => Value, Base => 10, Width => 3);
 
         Ada.Text_IO.Put (Tab);
-        Print_Value (
-            Value => Value,
-            Base => 2,
-            Width => 8,
-            Fill => True
-        );
+        Print_Value (Value => Value, Base => 16, Width => 2, Fill => True);
 
         Ada.Text_IO.Put (Tab);
-        Print_Value (
-            Value => Value,
-            Base => 8,
-            Width => 3,
-            Fill => True
-        );
+        Print_Value (Value => Value, Base => 2, Width => 8, Fill => True);
+
+        Ada.Text_IO.Put (Tab);
+        Print_Value (Value => Value, Base => 8, Width => 3, Fill => True);
 
         Ada.Text_IO.Put (Tab);
         Ada.Text_IO.Put (Item => Names (Char));
@@ -108,18 +94,15 @@ begin
         declare
             Arg : constant String := Ada.Command_Line.Argument (1);
             Base : Ada.Text_IO.Number_Base;
-            Start_Position : Positive;
+            Start_Position : Positive := 3;  -- the most common case
             Value : Integer;
         begin
             if Starts_With (Arg, "0x") then
                 Base := 16;
-                Start_Position := 3;
             elsif Starts_With (Arg, "0b") then
                 Base := 2;
-                Start_Position := 3;
             elsif Starts_With (Arg, "0o") then
                 Base := 8;
-                Start_Position := 3;
             else
                 Base := 10;
                 Start_Position := 1;
