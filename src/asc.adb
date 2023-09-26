@@ -1,5 +1,6 @@
 with Ada.Command_Line;
 with Ada.Text_IO;
+with Ada.Integer_Text_IO;
 with Ada.Characters.Latin_1;
 with Ada.Strings.Fixed;
 
@@ -10,8 +11,6 @@ procedure Asc is
     subtype ASCII_Character is
        Character range Ada.Characters.Latin_1.NUL ..
              Ada.Characters.Latin_1.DEL;
-
-    Number_Error : exception;  -- raised if number is out of ASCII range
 
     procedure Print_Row (Char : ASCII_Character) is
         Names : array (ASCII_Character) of String (1..3) :=
@@ -147,20 +146,18 @@ begin
                 Source => Arg,
                 Pointer => Start_Position,
                 Value => Value,
-                Base => Base
+                Base => Base,
+                First => 0,
+                Last => 127
             );
 
-            if Value in Character'Pos (ASCII_Character'First) .. 
-                Character'Pos (ASCII_Character'Last) then
-                Print_Row (Character'Val (Value));
-            else
-                raise Number_Error;
-            end if;
+            -- If we get here, no exceptions were raised from parsing
+            Print_Row (Character'Val (Value));
         exception
-            when Ada.Strings.Length_Error =>
-                Ada.Text_IO.Put_Line ("Number string too long: " & Arg);
-            when Number_Error =>
+            when Constraint_Error => 
                 Ada.Text_IO.Put_Line ("Number out of range: " & Arg);
+            when Ada.Text_IO.Data_Error | Ada.Text_IO.End_Error =>
+                Ada.Text_IO.Put_Line ("Not a valid number: " & Arg);
         end;
     else  -- print the ASCII table
         Print_Table;
