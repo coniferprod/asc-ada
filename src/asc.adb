@@ -12,6 +12,26 @@ procedure Asc is
        Character range Ada.Characters.Latin_1.NUL ..
              Ada.Characters.Latin_1.DEL;
 
+    procedure Print_Value (
+        Value : in Integer; 
+        Base : in Ada.Text_IO.Number_Base; 
+        Width : in Positive;
+        Fill : Boolean := False) is
+        Result_String : String (1..Width);
+        Position : Positive := Result_String'First;
+    begin
+        Strings_Edit.Integers.Put (
+            Destination => Result_String,
+            Pointer => Position,
+            Value => Value,
+            Base => Base,
+            Field => Width,
+            Justify => Strings_Edit.Right,
+            Fill => (if Fill then '0' else ' ')
+        );
+        Ada.Text_IO.Put (Result_String);
+    end Print_Value;
+
     procedure Print_Row (Char : ASCII_Character) is
         Names : array (ASCII_Character) of String (1..3) :=
            ("NUL", "SOH", "STX", "ETX",
@@ -25,6 +45,7 @@ procedure Asc is
                 others => "   ");
 
         Tab : constant Character := Ada.Characters.Latin_1.HT;
+        Value : constant Integer := Character'Pos (Char); 
     begin
         -- Update the Names array
         for Char in Ada.Characters.Latin_1.Exclamation .. ASCII_Character'Pred (Ada.Characters.Latin_1.DEL) loop
@@ -32,73 +53,35 @@ procedure Asc is
         end loop;
         Names (ASCII_Character'Last) := "DEL";
 
-        declare
-            Result_String : String (1..3);
-            Position : Positive := Result_String'First;
-        begin
-            Strings_Edit.Integers.Put (
-                Destination => Result_String,
-                Pointer => Position,
-                Value => Character'Pos (Char),
-                Base => 10,
-                Field => 3,
-                Justify => Strings_Edit.Right
-            );
-            Ada.Text_IO.Put (Result_String);
-        end;
+        Print_Value (
+            Value => Value,
+            Base => 10,
+            Width => 3 
+        );
 
         Ada.Text_IO.Put (Tab);
-
-        declare
-            Result_String : String (1..2);
-            Position : Positive := Result_String'First;
-        begin
-            Strings_Edit.Integers.Put (
-                Destination => Result_String,
-                Pointer => Position,
-                Value => Character'Pos (Char),
-                Base => 16,
-                Field => 2,
-                Justify => Strings_Edit.Right,
-                Fill => '0'
-            );
-            Ada.Text_IO.Put (Result_String);
-        end;
+        Print_Value (
+            Value => Value,
+            Base => 16,
+            Width => 2,
+            Fill => True 
+        );
 
         Ada.Text_IO.Put (Tab);
-        declare
-            Result_String : String (1..8);
-            Position : Positive := Result_String'First;
-        begin
-            Strings_Edit.Integers.Put (
-                Destination => Result_String,
-                Pointer => Position,
-                Value => Character'Pos (Char),
-                Base => 2,
-                Field => 8,
-                Justify => Strings_Edit.Right,
-                Fill => '0'
-            );
-            Ada.Text_IO.Put (Result_String);
-        end;
+        Print_Value (
+            Value => Value,
+            Base => 2,
+            Width => 8,
+            Fill => True
+        );
 
         Ada.Text_IO.Put (Tab);
-
-        declare
-            Result_String : String (1..3);
-            Position : Positive := Result_String'First;
-        begin
-            Strings_Edit.Integers.Put (
-                Destination => Result_String,
-                Pointer => Position,
-                Value => Character'Pos (Char),
-                Base => 8,
-                Field => 3,
-                Justify => Strings_Edit.Right,
-                Fill => '0'
-            );
-            Ada.Text_IO.Put (Result_String);
-        end;
+        Print_Value (
+            Value => Value,
+            Base => 8,
+            Width => 3,
+            Fill => True
+        );
 
         Ada.Text_IO.Put (Tab);
         Ada.Text_IO.Put (Item => Names (Char));
