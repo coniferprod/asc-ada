@@ -7,3 +7,5 @@ maintainers = ["Jere Käpyaho <2261936+jerekapyaho@users.noreply.github.com>"]
 maintainers-logins = ["jerekapyaho"]
 
 executables = ["asc"]
+[[depends-on]]
+simple_components = "^4.62.0"

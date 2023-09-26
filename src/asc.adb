@@ -6,6 +6,8 @@ with Ada.Strings.Fixed;
 with Ada.Strings.Bounded;
 with Ada.Strings.Unbounded;
 
+with Strings_Edit.Integers;
+
 procedure Asc is
     package CLI renames Ada.Command_Line;
     package TIO renames Ada.Text_IO;
@@ -205,8 +207,8 @@ begin
             -- Get the first command line argument string
             Arg : String := Ada.Command_Line.Argument (1);
             Base : Ada.Text_IO.Number_Base;
-            Number_String : Number_Strings.Bounded_String;
             Start_Position : Positive;
+            Value : Integer;
         begin
             if Starts_With (Arg, "0x") then
                 Base := 16;
@@ -222,12 +224,14 @@ begin
                 Start_Position := 1;
             end if;
 
-            Number_String := Number_Strings.To_Bounded_String (
-                Arg (Start_Position .. Arg'Last));
+            Strings_Edit.Integers.Get (
+                Source => Arg,
+                Pointer => Start_Position,
+                Value => Value,
+                Base => Base
+            );
 
-            Ada.Text_IO.Put_Line ("Base = " & Base'Image);
-            Ada.Text_IO.Put_Line ("Number_String = '" 
-                & Number_Strings.To_String (Number_String) & "'");
+            Print_Row (Character'Val (Value));
         exception
             when Ada.Strings.Length_Error =>
                 Ada.Text_IO.Put_Line ("Number string too long");
