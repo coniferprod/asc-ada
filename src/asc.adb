@@ -1,6 +1,5 @@
 with Ada.Command_Line;
 with Ada.Text_IO;
-with Ada.Integer_Text_IO;
 with Ada.Characters.Latin_1;
 with Ada.Strings.Fixed;
 
@@ -13,11 +12,11 @@ procedure Asc is
              Ada.Characters.Latin_1.DEL;
 
     procedure Print_Value (
-        Value : in Integer; 
-        Base : in Ada.Text_IO.Number_Base; 
+        Value : in Integer;
+        Base : in Ada.Text_IO.Number_Base;
         Width : in Positive;
         Fill : Boolean := False) is
-        Result_String : String (1..Width);
+        Result_String : String (1 .. Width);
         Position : Positive := Result_String'First;
     begin
         Strings_Edit.Integers.Put (
@@ -33,7 +32,7 @@ procedure Asc is
     end Print_Value;
 
     procedure Print_Row (Char : ASCII_Character) is
-        Names : array (ASCII_Character) of String (1..3) :=
+        Names : array (ASCII_Character) of String (1 .. 3) :=
            ("NUL", "SOH", "STX", "ETX",
             "EOT", "ENQ", "ACK", "BEL",
             "BS ", "TAB", "LF ", "VT ",
@@ -45,12 +44,14 @@ procedure Asc is
                 others => "   ");
 
         Tab : constant Character := Ada.Characters.Latin_1.HT;
-        Value : constant Integer := Character'Pos (Char); 
+        Value : constant Integer := Character'Pos (Char);
     begin
-        -- Update the Names array
+        --  Update the Names array
         declare
-            Start_Char : constant Character := Ada.Characters.Latin_1.Exclamation;
-            End_Char : constant Character := ASCII_Character'Pred (Ada.Characters.Latin_1.DEL);
+            Start_Char : constant Character :=
+                Ada.Characters.Latin_1.Exclamation;
+            End_Char : constant Character :=
+                ASCII_Character'Pred (Ada.Characters.Latin_1.DEL);
         begin
             for Char in Start_Char .. End_Char loop
                 Names (Char) := Char & "  "; -- pad to three characters
@@ -85,7 +86,7 @@ procedure Asc is
     function Starts_With (S : in String; Prefix : in String) return Boolean is
     begin
         return (Ada.Strings.Fixed.Index (
-                Source => S, 
+                Source => S,
                 Pattern => Prefix) /= 0);
     end Starts_With;
 
@@ -117,10 +118,10 @@ begin
                 Last => 127
             );
 
-            -- If we get here, no exceptions were raised from parsing
+            --  If we get here, no exceptions were raised from parsing
             Print_Row (Character'Val (Value));
         exception
-            when Constraint_Error => 
+            when Constraint_Error =>
                 Ada.Text_IO.Put_Line ("Number out of range: " & Arg);
             when Ada.Text_IO.Data_Error | Ada.Text_IO.End_Error =>
                 Ada.Text_IO.Put_Line ("Not a valid number: " & Arg);
