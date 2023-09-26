@@ -10,6 +10,9 @@ procedure Asc is
     package CLI renames Ada.Command_Line;
     package TIO renames Ada.Text_IO;
 
+    package Number_Strings is new Ada.Strings.Bounded.Generic_Bounded_Length
+           (Max => 8); -- varies from two (hex) to eight (binary)
+
     --  Subtype for ASCII characters with codes 0...127
     subtype ASCII_Character is
        Character range Ada.Characters.Latin_1.NUL ..
@@ -189,9 +192,46 @@ procedure Asc is
         end loop;
     end Print_Table;
 
+    function Starts_With (S : in String; Prefix : in String) return Boolean is
+    begin
+        return (Ada.Strings.Fixed.Index (
+                Source => S, 
+                Pattern => Prefix) /= 0);
+    end Starts_With;
+
 begin
     if CLI.Argument_Count /= 0 then
-        null;
+        declare
+            -- Get the first command line argument string
+            Arg : String := Ada.Command_Line.Argument (1);
+            Base : Ada.Text_IO.Number_Base;
+            Number_String : Number_Strings.Bounded_String;
+            Start_Position : Positive;
+        begin
+            if Starts_With (Arg, "0x") then
+                Base := 16;
+                Start_Position := 3;
+            elsif Starts_With (Arg, "0b") then
+                Base := 2;
+                Start_Position := 3;
+            elsif Starts_With (Arg, "0o") then
+                Base := 8;
+                Start_Position := 3;
+            else
+                Base := 10;
+                Start_Position := 1;
+            end if;
+
+            Number_String := Number_Strings.To_Bounded_String (
+                Arg (Start_Position .. Arg'Last));
+
+            Ada.Text_IO.Put_Line ("Base = " & Base'Image);
+            Ada.Text_IO.Put_Line ("Number_String = '" 
+                & Number_Strings.To_String (Number_String) & "'");
+        exception
+            when Ada.Strings.Length_Error =>
+                Ada.Text_IO.Put_Line ("Number string too long");
+        end;
     else  -- print the ASCII table
         Print_Table;
     end if;
