@@ -1,7 +1,6 @@
 with Ada.Command_Line;
 with Ada.Text_IO;
 with Ada.Characters.Latin_1;
-with Ada.Strings.Fixed;
 
 with Strings_Edit.Integers; -- for parsing number strings
 
@@ -87,13 +86,6 @@ procedure Asc is
         end loop;
     end Print_Table;
 
-    function Starts_With (S : in String; Prefix : in String) return Boolean is
-    begin
-        return (Ada.Strings.Fixed.Index (
-                Source => S,
-                Pattern => Prefix) /= 0);
-    end Starts_With;
-
 begin
     if Ada.Command_Line.Argument_Count /= 0 then
         declare
@@ -102,11 +94,11 @@ begin
             Start_Position : Positive := 3;  -- the most common case
             Value : Integer;
         begin
-            if Starts_With (Arg, "0x") then
+            if Strings_Edit.Is_Prefix ("0x", Arg) then
                 Base := 16;
-            elsif Starts_With (Arg, "0b") then
+            elsif Strings_Edit.Is_Prefix ("0b", Arg) then
                 Base := 2;
-            elsif Starts_With (Arg, "0o") then
+            elsif Strings_Edit.Is_Prefix ("0o", Arg) then
                 Base := 8;
             else
                 Start_Position := 1;
