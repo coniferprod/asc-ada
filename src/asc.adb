@@ -11,9 +11,13 @@ procedure Asc is
        Character range Ada.Characters.Latin_1.NUL ..
              Ada.Characters.Latin_1.DEL;
 
+    --  Number base which can only be one of the specified
+    subtype Our_Base is Ada.Text_IO.Number_Base
+        with Static_Predicate => Our_Base in 2 | 8 | 10 | 16;
+
     procedure Print_Value (
         Value : in Integer;
-        Base : in Ada.Text_IO.Number_Base;
+        Base : in Our_Base;
         Width : in Positive;
         Fill : Boolean := False) is
         Result_String : String (1 .. Width);
@@ -94,7 +98,7 @@ begin
     if Ada.Command_Line.Argument_Count /= 0 then
         declare
             Arg : constant String := Ada.Command_Line.Argument (1);
-            Base : Ada.Text_IO.Number_Base;
+            Base : Our_Base := 10;
             Start_Position : Positive := 3;  -- the most common case
             Value : Integer;
         begin
@@ -105,7 +109,6 @@ begin
             elsif Starts_With (Arg, "0o") then
                 Base := 8;
             else
-                Base := 10;
                 Start_Position := 1;
             end if;
 
@@ -126,7 +129,7 @@ begin
             when Ada.Text_IO.Data_Error | Ada.Text_IO.End_Error =>
                 Ada.Text_IO.Put_Line ("Not a valid number: " & Arg);
         end;
-    else  -- print the ASCII table
+    else
         Print_Table;
     end if;
 end Asc;
