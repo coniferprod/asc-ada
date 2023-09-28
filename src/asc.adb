@@ -18,7 +18,7 @@ procedure Asc is
         Value : in Integer;
         Base : in Our_Base;
         Width : in Positive;
-        Fill : Boolean := False) is
+        Fill : in Boolean := False) is
         Result_String : String (1 .. Width);
         Position : Positive := Result_String'First;
     begin
@@ -34,7 +34,7 @@ procedure Asc is
         Ada.Text_IO.Put (Result_String);
     end Print_Value;
 
-    procedure Print_Row (Char : ASCII_Character) is
+    procedure Print_Row (Char : in ASCII_Character) is
         Names : array (ASCII_Character) of String (1 .. 3) :=
            ("NUL", "SOH", "STX", "ETX",
             "EOT", "ENQ", "ACK", "BEL",
