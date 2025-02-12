@@ -5,10 +5,9 @@ with Ada.Characters.Latin_1;
 with Ada.Strings.Fixed;
 
 procedure Asc is
-   --  Subtype for ASCII characters with codes 0...127
+   --  Subtypes for ASCII characters with codes 0...127
    subtype ASCII_Character is
      Character range Ada.Characters.Latin_1.NUL .. Ada.Characters.Latin_1.DEL;
-
    subtype ASCII_Code is Integer range 0 .. 127;
 
    --  Number base which can only be one of the specified
@@ -32,12 +31,10 @@ procedure Asc is
    begin
       declare
       begin
-         --Ada.Text_IO.Put_Line ("Print_Value here: Value = " & Value'Image);
-
          Ada.Integer_Text_IO.Put (To => Temp_String, Item => Value, Base => Base);
          --  Put does not output the base if it is 10, so we need to check
          --  for hash characters later. The width is the length of the output string,
-         --  so there will most likely be padding. So trim it away.
+         --  so there will most likely be padding. Trim it away.
          Ada.Strings.Fixed.Trim (Source => Temp_String, Side => Ada.Strings.Both);
 
          --Ada.Text_IO.Put_Line ("Temp_String = " & Temp_String);
@@ -48,15 +45,9 @@ procedure Asc is
          --  Both hash positions are 0 if the pattern is not found.
 
          if First_Hash_Position /= 0 then
-            --Ada.Text_IO.Put ("Going to take slice ");
-            --Ada.Integer_Text_IO.Put (Item => First_Hash_Position, Width => 1);
-            --Ada.Text_IO.Put (" .. ");
-            --Ada.Integer_Text_IO.Put (Item => Second_Hash_Position, Width => 1);
-            --Ada.Text_IO.New_Line;
-
             --  If there is one hash, there is another one as well,
-            --  so take a slice of the temp string. Also justify as
-            --  requested by the caller. 
+            --  so take a slice of the temp string delimited by the
+            --  hash positions. Also pad from left with the desired character. 
             Ada.Strings.Fixed.Move (
                Source => Temp_String (First_Hash_Position + 1 .. Second_Hash_Position - 1), 
                Target => Result_String,
@@ -172,11 +163,9 @@ begin
       --  The position of the last character that Get read (ignored)
       Last_Position_Ignored  : Positive;
    begin
-      --  The argument value could conceivably be empty, so check that it
-      --  has at least something there.
+      --  Bail out if the argument value is empty
       if Arg'Length < 1 then
          Print_Error ("Error in argument: empty");
-         --Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, "Error in argument: " & Arg);
          Ada.Command_Line.Set_Exit_Status (Ada.Command_Line.Failure);
          return;
       end if;
@@ -191,21 +180,11 @@ begin
          Start_Position := 1;
       end if;
 
-      --  Construct an image like "10#65#" or "16#7E#"
-      --  so that it can be parsed. If the value is not
-      --  a valid ASCII code, Constraint_Error will be raised.
-      --Value := ASCII_Code'Value (Base'Image
-      --   & "#" & Arg (Start_Position .. Arg'Length) & "#");
-      Ada.Text_IO.Put_Line ("'" & Base'Image & "#" & Arg (Start_Position .. Arg'Length) & "#'");
-      --Ada.Integer_Text_IO.Put (To => Value_Part, Item => )
-
+      --  Construct an image like "10#65#" or "16#7E#" and parse it.
       Ada.Integer_Text_IO.Get (
          From => Base'Image & "#" & Arg (Start_Position .. Arg'Length) & "#",
          Item => Value,
          Last => Last_Position_Ignored);
-      Ada.Text_IO.Put ("Ada.Integer_Text_IO.Get returned ");
-      Ada.Integer_Text_IO.Put (Item => Value);
-      Ada.Text_IO.New_Line;
 
       Print_Row (Character'Val (Value));
    exception
