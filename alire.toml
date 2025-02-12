@@ -8,4 +8,4 @@ maintainers-logins = ["jerekapyaho"]
 
 executables = ["asc"]
 [[depends-on]]
-simple_components = "^4.62.0"
+simple_components = "^4.68.0"
