@@ -16,33 +16,41 @@ procedure Asc is
 
    --  Print a non-base-10 value.
    --  Based on ideas found here: https://stackoverflow.com/a/30423877
-   procedure Print_Value (Value : ASCII_Code; Base : Our_Base; Width : Positive) is
-   -- Make a temporary string with the maximum length (of 2#1111111#)
+   procedure Print_Value (Value : ASCII_Code; Width : Positive; Base : Our_Base) is
+      use Ada.Strings;
+      use Ada.Strings.Fixed;
+
+      --  Make a temporary string with the maximum length (of 2#1111111#)
       Temp_String : String (1 .. 10);
 
       First_Hash_Position : Natural := 0;
       Second_Hash_Position : Natural := 0;
    begin
+      --  Put the ASCII code value in the specified base into the temporary string. 
       --  We are not putting a base 10 value, so we know there will be hash characters.
       Ada.Integer_Text_IO.Put (To => Temp_String, Item => Value, Base => Base);
 
       -- Get the first hash position, starting from the front
-      First_Hash_Position := Ada.Strings.Fixed.Index (Source => Temp_String, 
-         Pattern => "#", From => 1, Going => Ada.Strings.Forward);
+      First_Hash_Position := Index (Source => Temp_String, 
+         Pattern => "#", From => 1, Going => Forward);
 
       -- Get the second hash position, starting from the back
-      Second_Hash_Position := Ada.Strings.Fixed.Index (Source => Temp_String,
-         Pattern => "#", From => Temp_String'Length, Going => Ada.Strings.Backward);
+      Second_Hash_Position := Index (Source => Temp_String,
+         Pattern => "#", From => Temp_String'Length, Going => Backward);
 
       -- Put the part between the hash positions, zero-padded from the left
       Ada.Text_IO.Put (
-         Ada.Strings.Fixed.Tail (
+         Tail (
             Source => Temp_String (First_Hash_Position + 1 .. Second_Hash_Position - 1),
             Count   => Width,
             Pad     => '0'));
    end Print_Value;
 
+   --  Print a full row for the character: decimal, hexadecimal, binary,
+   --  octal, and the character name or literal.
    procedure Print_Row (Char : ASCII_Character) is
+      use Ada.Text_IO;
+
       --  Names of the ASCII characters, initially with just the
       --  control characters. Later the rest will be filled in
       --  with their literal values. All are padded to three characters.
@@ -76,22 +84,28 @@ procedure Asc is
          Names (ASCII_Character'Last) := "DEL";
       end;
 
+      --  Put the base 10 value, with the maximum width.
+      --  This also gives us left padding with spaces.
       Ada.Integer_Text_IO.Put (Item => Value, Width => ASCII_Code'Width, Base => 10);
 
-      Ada.Text_IO.Put (Tab);
-      Print_Value (Value => Value, Base => 16, Width => 2);
+      --  Put the hexadecimal value (two hex digits, zero-padded from left)
+      Put (Tab);
+      Print_Value (Value => Value, Width => 2, Base => 16);
 
-      Ada.Text_IO.Put (Tab);
-      Print_Value (Value => Value, Base => 2, Width => 7);
+      --  Put the binary value (seven bits, zero-padded from left)
+      Put (Tab);
+      Print_Value (Value => Value, Width => 7, Base => 2);
 
-      Ada.Text_IO.Put (Tab);
-      Ada.Text_IO.Put (Tab);
-      Print_Value (Value => Value, Base => 8, Width => 3);
+      --  Put the octal value (three octal digits, zero-padded from left)
+      Put (Tab);
+      Put (Tab);
+      Print_Value (Value => Value, Width => 3, Base => 8);
 
-      Ada.Text_IO.Put (Tab);
-      Ada.Text_IO.Put (Item => Names (Char));
+      --  Put the character name or literal
+      Put (Tab);
+      Put (Item => Names (Char));
 
-      Ada.Text_IO.New_Line;
+      New_Line;
    end Print_Row;
 
    procedure Print_Table is
