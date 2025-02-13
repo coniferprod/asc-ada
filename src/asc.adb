@@ -14,52 +14,32 @@ procedure Asc is
    subtype Our_Base is Ada.Text_IO.Number_Base with
       Static_Predicate => Our_Base in 2 | 8 | 10 | 16;
 
-   procedure Print_Value (
-      Value : Integer;
-      Base : Our_Base;
-      Width : Positive;
-      Pad : Character) is
-      
-      -- Make a temporary string with the maximum length (of 2#1111111#)
+   --  Print a non-base-10 value.
+   --  Based on ideas found here: https://stackoverflow.com/a/30423877
+   procedure Print_Value (Value : ASCII_Code; Base : Our_Base; Width : Positive) is
+   -- Make a temporary string with the maximum length (of 2#1111111#)
       Temp_String : String (1 .. 10);
-      
+
       First_Hash_Position : Natural := 0;
       Second_Hash_Position : Natural := 0;
-
-      --  Each printed value ends up here, padded and justified
-      Result_String : String (1 .. Width);
    begin
-      declare
-      begin
-         Ada.Integer_Text_IO.Put (To => Temp_String, Item => Value, Base => Base);
-         --  Put does not output the base if it is 10, so we need to check
-         --  for hash characters later. The width is the length of the output string,
-         --  so there will most likely be padding. Trim it away.
-         Ada.Strings.Fixed.Trim (Source => Temp_String, Side => Ada.Strings.Both);
+      --  We are not putting a base 10 value, so we know there will be hash characters.
+      Ada.Integer_Text_IO.Put (To => Temp_String, Item => Value, Base => Base);
 
-         --Ada.Text_IO.Put_Line ("Temp_String = " & Temp_String);
-         First_Hash_Position := Ada.Strings.Fixed.Index (Source => Temp_String, 
-            Pattern => "#", From => 1, Going => Ada.Strings.Forward);
-         Second_Hash_Position := Ada.Strings.Fixed.Index (Source => Temp_String,
-            Pattern => "#", From => Temp_String'Length, Going => Ada.Strings.Backward);
-         --  Both hash positions are 0 if the pattern is not found.
+      -- Get the first hash position, starting from the front
+      First_Hash_Position := Ada.Strings.Fixed.Index (Source => Temp_String, 
+         Pattern => "#", From => 1, Going => Ada.Strings.Forward);
 
-         if First_Hash_Position /= 0 then
-            --  If there is one hash, there is another one as well,
-            --  so take a slice of the temp string delimited by the
-            --  hash positions. Also pad from left with the desired character. 
-            Ada.Strings.Fixed.Move (
-               Source => Temp_String (First_Hash_Position + 1 .. Second_Hash_Position - 1), 
-               Target => Result_String,
-               Justify => Ada.Strings.Right,
-               Pad => Pad);
-         else
-            Ada.Strings.Fixed.Move (
-               Source => Temp_String, 
-               Target => Result_String);
-         end if;
-         Ada.Text_IO.Put (Result_String);
-      end;
+      -- Get the second hash position, starting from the back
+      Second_Hash_Position := Ada.Strings.Fixed.Index (Source => Temp_String,
+         Pattern => "#", From => Temp_String'Length, Going => Ada.Strings.Backward);
+
+      -- Put the part between the hash positions, zero-padded from the left
+      Ada.Text_IO.Put (
+         Ada.Strings.Fixed.Tail (
+            Source => Temp_String (First_Hash_Position + 1 .. Second_Hash_Position - 1),
+            Count   => Width,
+            Pad     => '0'));
    end Print_Value;
 
    procedure Print_Row (Char : ASCII_Character) is
@@ -96,17 +76,17 @@ procedure Asc is
          Names (ASCII_Character'Last) := "DEL";
       end;
 
-      Print_Value (Value => Value, Base => 10, Width => 3, Pad => Ada.Characters.Latin_1.Space);
+      Ada.Integer_Text_IO.Put (Item => Value, Width => ASCII_Code'Width, Base => 10);
 
       Ada.Text_IO.Put (Tab);
-      Print_Value (Value => Value, Base => 16, Width => 2, Pad => '0');
+      Print_Value (Value => Value, Base => 16, Width => 2);
 
       Ada.Text_IO.Put (Tab);
-      Print_Value (Value => Value, Base => 2, Width => 7, Pad => '0');
+      Print_Value (Value => Value, Base => 2, Width => 7);
 
       Ada.Text_IO.Put (Tab);
       Ada.Text_IO.Put (Tab);
-      Print_Value (Value => Value, Base => 8, Width => 3, Pad => '0');
+      Print_Value (Value => Value, Base => 8, Width => 3);
 
       Ada.Text_IO.Put (Tab);
       Ada.Text_IO.Put (Item => Names (Char));
@@ -158,7 +138,7 @@ begin
 
       --  The number part of the argument, from after any possible prefix
       --  to the end of the string. Covers all the possible lengths.
-      Value_Part     : String (1 .. 7);
+      --Value_Part     : String (1 .. 7);
 
       --  The position of the last character that Get read (ignored)
       Last_Position_Ignored  : Positive;
@@ -181,6 +161,8 @@ begin
       end if;
 
       --  Construct an image like "10#65#" or "16#7E#" and parse it.
+      --  Raises Constraint_Error if the value does not fit in
+      --  the range of ASCII_Code.
       Ada.Integer_Text_IO.Get (
          From => Base'Image & "#" & Arg (Start_Position .. Arg'Length) & "#",
          Item => Value,
