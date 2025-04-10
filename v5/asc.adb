@@ -1,14 +1,12 @@
-pragma Assertion_Policy (Check);
-
 with Ada.Text_IO;
 with Ada.Command_Line;
 with Ada.Characters.Handling; use Ada.Characters.Handling;
-with Ada.Characters.Latin_1; use Ada.Characters.Latin_1;
-with Ada.Integer_Text_IO;
-with Ada.Strings;
+with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Integer_Text_IO;
 
 procedure Asc is
+
    subtype ASCII_Code is Integer range 0 .. 127;
 
    --  Number base which can only be one of the specified
@@ -18,8 +16,6 @@ procedure Asc is
    --  Print a non-base-10 value.
    --  Based on ideas found here: https://stackoverflow.com/a/30423877
    procedure Print_Value (Value : ASCII_Code; Width : Positive; Base : Our_Base) is
-      use Ada.Strings;
-
       --  Make a temporary string with the maximum length (of 2#1111111#)
       Temp_String : String (1 .. 10);
 
@@ -62,7 +58,7 @@ procedure Asc is
       Value : constant ASCII_Code := ISO_646'Pos (Char);
 
       --  The separator between the fields
-      Blanks : constant String := 4 * Space;
+      Blanks : constant String := 2 * Space;
    begin
       Print_Value (Value, Width => 3, Base => 10);
       Put (Blanks);
@@ -103,8 +99,8 @@ procedure Asc is
    end Print_Error;
 
 begin
-   --  If there are no command line arguments, just print
-   --  the whole table and exit.
+   --  If there are no command line arguments, 
+   --  just print the whole table and exit.
    if Ada.Command_Line.Argument_Count < 1 then
       Print_Table;
       return;

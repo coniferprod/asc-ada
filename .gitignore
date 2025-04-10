@@ -3,3 +3,6 @@ bin/
 alire/
 config/
 .DS_Store
+*.ali
+*.o
+asc

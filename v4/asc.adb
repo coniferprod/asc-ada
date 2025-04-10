@@ -1,14 +1,12 @@
-pragma Assertion_Policy (Check);
-
 with Ada.Text_IO;
 with Ada.Command_Line;
 with Ada.Characters.Handling; use Ada.Characters.Handling;
-with Ada.Characters.Latin_1; use Ada.Characters.Latin_1;
-with Ada.Integer_Text_IO;
-with Ada.Strings;
+with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Integer_Text_IO;
 
 procedure Asc is
+
    subtype ASCII_Code is Integer range 0 .. 127;
 
    --  Number base which can only be one of the specified
@@ -18,8 +16,6 @@ procedure Asc is
    --  Print a non-base-10 value.
    --  Based on ideas found here: https://stackoverflow.com/a/30423877
    procedure Print_Value (Value : ASCII_Code; Width : Positive; Base : Our_Base) is
-      use Ada.Strings;
-
       --  Make a temporary string with the maximum length (of 2#1111111#)
       Temp_String : String (1 .. 10);
 
@@ -62,7 +58,7 @@ procedure Asc is
       Value : constant ASCII_Code := ISO_646'Pos (Char);
 
       --  The separator between the fields
-      Blanks : constant String := 4 * Space;
+      Blanks : constant String := 2 * Space;
    begin
       Print_Value (Value, Width => 3, Base => 10);
       Put (Blanks);
@@ -90,66 +86,16 @@ procedure Asc is
       end loop;
    end Print_Table;
 
-   --  Helper function to find out if a string starts with a prefix.
-   function Starts_With (S : String; Prefix : String) return Boolean is
-   begin
-      return (Ada.Strings.Fixed.Index (Source => S, Pattern => Prefix) /= 0);
-   end Starts_With;
-
-   --  Print an error message to the standard error device.
-   procedure Print_Error (Message : String) is
-   begin
-      Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, Message);
-   end Print_Error;
-
 begin
-   --  If there are no command line arguments, just print
-   --  the whole table and exit.
+   --  If there are no command line arguments, 
+   --  just print the whole table and exit.
    if Ada.Command_Line.Argument_Count < 1 then
       Print_Table;
       return;
    end if;
 
-   declare
-      Arg : constant String := Ada.Command_Line.Argument (1);
-
-      --  The start position of the number part, after any prefix.
-      --  The most common case is 3 (after a prefix line "0x").
-      Start_Position : Positive := 3;
-
-      --  The position of the last character that the
-      --  Get procedure read (required but ignored here)
-      Last_Position_Ignored  : Positive;
-
-      --  The actual number we get out of the argument
-      Value : Integer;
-
-      --  The base for the argument, defaults to decimal
-      Base : Our_Base := 10;
-   begin
-      if Starts_With (Arg, "0x") then
-         Base := 16;
-      elsif Starts_With (Arg, "0b") then
-         Base := 2;
-      elsif Starts_With (Arg, "0o") then
-         Base := 8;
-      else  --  no prefix, most likely a decimal number
-         Start_Position := 1;
-      end if;
-
-      --  Construct an image like "10#65#" or "16#7E#" and parse it.
-      Ada.Integer_Text_IO.Get (
-         From => Base'Image & "#" & Arg (Start_Position .. Arg'Length) & "#",
-         Item => Value,
-         Last => Last_Position_Ignored);
-
-      if Value in ASCII_Code then
-         Print_Row (Character'Val (Value));
-      else
-         Print_Error ("Character code out of range: " & Arg);
-      end if;
-   exception
-      when Ada.Text_IO.Data_Error =>
-         Print_Error ("Error in argument");
-   end;
+   --  Show the first command line argument
+   Ada.Text_IO.Put ("First argument = '" &
+      Ada.Command_Line.Argument (1) & "'");
+   Ada.Text_IO.New_Line;
 end Asc;
